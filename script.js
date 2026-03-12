@@ -1,273 +1,299 @@
-// Wait for the DOM to be fully loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Set current year in footer
-    document.getElementById('year').textContent = new Date().getFullYear();
+/* ==========================================
+   MANTR - LUXURY EVENT PLANNING
+   JavaScript
+   ========================================== */
 
-    // Mobile menu toggle
-    const hamburger = document.querySelector('.hamburger');
-    const navLinks = document.querySelector('.nav-links');
-    const navLinksItems = document.querySelectorAll('.nav-links a');
-    
-    if (hamburger) {
-        hamburger.addEventListener('click', function() {
-            this.classList.toggle('active');
-            navLinks.classList.toggle('active');
-            document.body.style.overflow = this.classList.contains('active') ? 'hidden' : '';
-        });
-    }
+document.addEventListener('DOMContentLoaded', function () {
 
-    // Close mobile menu when clicking on a nav link
-    navLinksItems.forEach(link => {
-        link.addEventListener('click', () => {
-            if (hamburger.classList.contains('active')) {
-                hamburger.classList.remove('active');
-                navLinks.classList.remove('active');
-                document.body.style.overflow = '';
-            }
-        });
-    });
+    // ==========================================
+    // NAVIGATION SCROLL EFFECT
+    // ==========================================
+    const navbar = document.getElementById('navbar');
+    const logo = document.getElementById('logo');
+    const btnNav = document.getElementById('btnNav');
 
-    // Navbar scroll effect
-    const navbar = document.querySelector('.navbar');
-    window.addEventListener('scroll', () => {
+    function handleScroll() {
         if (window.scrollY > 50) {
             navbar.classList.add('scrolled');
+            logo.src = 'images/logo.png';
         } else {
             navbar.classList.remove('scrolled');
+            logo.src = 'images/logo_old.png';
         }
-    });
-
-    // Initialize the navbar state
-    if (window.scrollY > 50) {
-        navbar.classList.add('scrolled');
     }
 
-    // Smooth scrolling for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            
-            const targetId = this.getAttribute('href');
-            if (targetId === '#') return;
-            
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                const headerOffset = 80; // Height of navbar
-                const elementPosition = targetElement.getBoundingClientRect().top;
-                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Check on page load
 
+    // ==========================================
+    // MOBILE MENU
+    // ==========================================
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    const mobileLinks = mobileMenu.querySelectorAll('a');
+
+    hamburger.addEventListener('click', function () {
+        hamburger.classList.toggle('active');
+        mobileMenu.classList.toggle('active');
+        document.body.style.overflow = mobileMenu.classList.contains('active') ? 'hidden' : '';
+    });
+
+    mobileLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            hamburger.classList.remove('active');
+            mobileMenu.classList.remove('active');
+            document.body.style.overflow = '';
+        });
+    });
+
+    // ==========================================
+    // PARALLAX EFFECT
+    // ==========================================
+    const parallaxBg = document.getElementById('parallaxBg');
+
+    function handleParallax() {
+        const scrolled = window.scrollY;
+        const rate = scrolled * 0.4;
+        parallaxBg.style.transform = `translateY(${rate}px)`;
+    }
+
+    window.addEventListener('scroll', handleParallax);
+
+    // ==========================================
+    // SMOOTH SCROLL
+    // ==========================================
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                const offsetTop = target.offsetTop - 80;
                 window.scrollTo({
-                    top: offsetPosition,
+                    top: offsetTop,
                     behavior: 'smooth'
                 });
             }
         });
     });
 
-    // Parallax effect for elements with data-speed attribute
-    const parallaxElements = document.querySelectorAll('[data-speed]');
-    
-    function updateParallax() {
-        const scrollPosition = window.pageYOffset;
-        
-        parallaxElements.forEach(element => {
-            const speed = parseFloat(element.getAttribute('data-speed'));
-            const yPos = -(scrollPosition * speed);
-            
-            // Only apply transform if the element is in the viewport
-            const elementTop = element.getBoundingClientRect().top;
-            const elementBottom = element.getBoundingClientRect().bottom;
-            const isInViewport = elementTop < window.innerHeight && elementBottom > 0;
-            
-            if (isInViewport) {
-                element.style.transform = `translate3d(0, ${yPos}px, 0)`;
+    // ==========================================
+    // SCROLL ANIMATIONS (Intersection Observer)
+    // ==========================================
+    const observerOptions = {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry, index) => {
+            if (entry.isIntersecting) {
+                // Add delay based on index for staggered effect
+                setTimeout(() => {
+                    entry.target.classList.add('visible');
+                }, index * 100);
             }
         });
-        
-        requestAnimationFrame(updateParallax);
-    }
-    
-    // Start the parallax animation
-    if (parallaxElements.length > 0) {
-        requestAnimationFrame(updateParallax);
-    }
+    }, observerOptions);
 
-    // Intersection Observer for scroll animations
-    const animateOnScroll = function() {
-        const elements = document.querySelectorAll('.service-card, .gallery-item, [data-aos]');
-        
-        const observer = new IntersectionObserver((entries) => {
+    // Observe service cards
+    document.querySelectorAll('.service-card').forEach((card, index) => {
+        card.style.transitionDelay = `${index * 50}ms`;
+        observer.observe(card);
+    });
+
+    // Observe gallery items
+    document.querySelectorAll('.gallery-item').forEach((item, index) => {
+        item.style.transitionDelay = `${index * 100}ms`;
+        item.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(item);
+    });
+
+    // Observe stats
+    document.querySelectorAll('.stat-item').forEach((stat, index) => {
+        stat.style.opacity = '0';
+        stat.style.transform = 'translateY(30px)';
+        stat.style.transition = `opacity 0.6s ease ${index * 0.1}s, transform 0.6s ease ${index * 0.1}s`;
+
+        const statObserver = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
-                    const element = entry.target;
-                    
-                    // For elements with data-aos attribute
-                    if (element.hasAttribute('data-aos')) {
-                        const animationType = element.getAttribute('data-aos');
-                        const delay = element.getAttribute('data-aos-delay') || 0;
-                        
-                        setTimeout(() => {
-                            element.style.opacity = '1';
-                            element.style.transform = 'translateY(0)';
-                            element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                        }, parseInt(delay));
-                        
-                        // Stop observing after animation
-                        observer.unobserve(element);
-                    } 
-                    // For service cards and gallery items
-                    else if (element.classList.contains('service-card') || element.classList.contains('gallery-item')) {
-                        element.style.opacity = '1';
-                        element.style.transform = 'translateY(0)';
-                        element.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-                        
-                        // Stop observing after animation
-                        observer.unobserve(element);
-                    }
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
                 }
             });
-        }, {
-            threshold: 0.1
-        });
-        
-        // Observe all elements
-        elements.forEach(element => {
-            // Set initial styles for animation
-            if (element.hasAttribute('data-aos')) {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(20px)';
-            } else if (element.classList.contains('service-card') || element.classList.contains('gallery-item')) {
-                element.style.opacity = '0';
-                element.style.transform = 'translateY(30px)';
-                element.style.transition = 'opacity 0.6s ease, transform 0.6s ease, box-shadow 0.3s ease';
-            }
-            
-            observer.observe(element);
-        });
-    };
-    
-    // Initialize scroll animations
-    if (document.querySelector('.service-card, .gallery-item, [data-aos]')) {
-        animateOnScroll();
-    }
+        }, { threshold: 0.5 });
 
-    // Form submission handling
-    const contactForm = document.getElementById('contactForm');
-    if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            // Basic form validation
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const message = document.getElementById('message').value.trim();
-            
-            if (!name || !email || !message) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-            
-            if (!isValidEmail(email)) {
-                alert('Please enter a valid email address.');
-                return;
-            }
-            
-            // Here you would typically send the form data to a server
-            // For this example, we'll just show a success message
-            const submitButton = contactForm.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.textContent;
-            
-            // Simulate form submission
-            submitButton.disabled = true;
-            submitButton.textContent = 'Sending...';
-            
-            // Simulate API call
-            setTimeout(() => {
-                // Reset form
-                contactForm.reset();
-                
-                // Show success message
-                alert('Thank you for your message! We will get back to you soon.');
-                
-                // Reset button
-                submitButton.disabled = false;
-                submitButton.textContent = originalButtonText;
-            }, 1500);
-        });
-    }
-    
-    // Email validation helper function
-    function isValidEmail(email) {
-        const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return re.test(email);
-    }
+        statObserver.observe(stat);
+    });
 
-    // Lazy loading for images
-    if ('loading' in HTMLImageElement.prototype) {
-        // Native lazy loading is supported
-        const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-        lazyImages.forEach(img => {
-            img.src = img.dataset.src;
+    // ==========================================
+    // LIGHTBOX
+    // ==========================================
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightboxImg');
+    const lightboxClose = document.getElementById('lightboxClose');
+    const galleryItems = document.querySelectorAll('.gallery-item');
+
+    galleryItems.forEach(item => {
+        item.addEventListener('click', function () {
+            const src = this.getAttribute('data-src');
+            lightboxImg.src = src;
+            lightbox.classList.add('active');
+            document.body.style.overflow = 'hidden';
         });
-    } else {
-        // Fallback for browsers that don't support native lazy loading
-        const lazyImages = document.querySelectorAll('img[loading="lazy"]');
-        
-        if ('IntersectionObserver' in window) {
-            const imageObserver = new IntersectionObserver((entries, observer) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const img = entry.target;
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        img.removeAttribute('loading');
-                        imageObserver.unobserve(img);
-                    }
-                });
-            });
-            
-            lazyImages.forEach(img => {
-                imageObserver.observe(img);
-            });
-        } else {
-            // Fallback for browsers that don't support IntersectionObserver
-            const lazyLoad = function() {
-                lazyImages.forEach(img => {
-                    if (img.getBoundingClientRect().top <= window.innerHeight && img.getBoundingClientRect().bottom >= 0) {
-                        img.src = img.dataset.src;
-                        img.removeAttribute('data-src');
-                        img.removeAttribute('loading');
-                    }
-                });
-                
-                // Remove event listener if all images are loaded
-                if (lazyImages.length === 0) {
-                    window.removeEventListener('scroll', lazyLoad);
-                    window.removeEventListener('resize', lazyLoad);
-                    window.removeEventListener('orientationchange', lazyLoad);
-                }
-            };
-            
-            // Initial check
-            lazyLoad();
-            
-            // Add event listeners
-            window.addEventListener('scroll', lazyLoad);
-            window.addEventListener('resize', lazyLoad);
-            window.addEventListener('orientationchange', lazyLoad);
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightbox.addEventListener('click', function (e) {
+        if (e.target === lightbox) {
+            closeLightbox();
         }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+            closeLightbox();
+        }
+    });
+
+    function closeLightbox() {
+        lightbox.classList.remove('active');
+        document.body.style.overflow = '';
     }
-    
-    // Add a class to the body when the page has loaded
-    // This can be used for page load animations
-    window.addEventListener('load', function() {
-        document.body.classList.add('page-loaded');
+
+    // ==========================================
+    // CONTACT FORM
+    // ==========================================
+    const contactForm = document.getElementById('contactForm');
+    const successMessage = document.getElementById('successMessage');
+    const submitBtn = document.getElementById('submitBtn');
+
+    contactForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Show loading state
+        submitBtn.innerHTML = '<span class="spinner"></span> Sending...';
+        submitBtn.disabled = true;
+
+        // Simulate form submission
+        setTimeout(() => {
+            contactForm.style.display = 'none';
+            successMessage.classList.add('show');
+
+            // Reset after 5 seconds
+            setTimeout(() => {
+                contactForm.reset();
+                contactForm.style.display = 'flex';
+                successMessage.classList.remove('show');
+                submitBtn.innerHTML = 'Send Message';
+                submitBtn.disabled = false;
+            }, 5000);
+        }, 2000);
     });
-    
-    // Add a class to the body when the user starts interacting with the page
-    // This can be used for hover effects that shouldn't trigger on page load
-    document.addEventListener('mousemove', function init() {
-        document.body.classList.add('user-is-interacting');
-        document.removeEventListener('mousemove', init);
+
+    // ==========================================
+    // FOOTER YEAR
+    // ==========================================
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // ==========================================
+    // ACTIVE NAV LINK ON SCROLL
+    // ==========================================
+    const sections = document.querySelectorAll('section[id]');
+    const navLinksItems = document.querySelectorAll('.nav-links a');
+
+    function highlightNavLink() {
+        const scrollY = window.scrollY;
+
+        sections.forEach(section => {
+            const sectionHeight = section.offsetHeight;
+            const sectionTop = section.offsetTop - 100;
+            const sectionId = section.getAttribute('id');
+
+            if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+                navLinksItems.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + sectionId) {
+                        link.classList.add('active');
+                    }
+                });
+            }
+        });
+    }
+
+    window.addEventListener('scroll', highlightNavLink);
+
+    // ==========================================
+    // BUTTON HOVER EFFECT (Shine animation)
+    // ==========================================
+    const buttons = document.querySelectorAll('.btn-luxury, .btn-gold');
+
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function (e) {
+            const x = e.clientX - button.getBoundingClientRect().left;
+            const y = e.clientY - button.getBoundingClientRect().top;
+
+            const ripple = document.createElement('span');
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+
+            button.appendChild(ripple);
+
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        });
     });
+
+    // ==========================================
+    // PRELOADER (Optional - Uncomment if needed)
+    // ==========================================
+    // window.addEventListener('load', function() {
+    //     const preloader = document.querySelector('.preloader');
+    //     if (preloader) {
+    //         preloader.style.opacity = '0';
+    //         setTimeout(() => {
+    //             preloader.style.display = 'none';
+    //         }, 500);
+    //     }
+    // });
+
 });
+
+// ==========================================
+// CSS FOR SPINNER AND RIPPLE (Add to CSS file)
+// ==========================================
+// Add these styles to your CSS if needed:
+/*
+.spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.ripple {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    transform: scale(0);
+    animation: rippleEffect 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes rippleEffect {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+*/
